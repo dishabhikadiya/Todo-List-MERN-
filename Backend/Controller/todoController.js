@@ -26,8 +26,10 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
 exports.todoFind = catchAsyncErrors(async (req, res) => {
   try {
     console.log("ress", req.query);
-    let api = new Api(todoModel.find(), req.query).search();
+    let api = new Api(todoModel.find(), req.query).search().filter();
     console.log("api", api);
+    const query = todoModels.find(this.queryStr);
+    query.pagination().sort();
     const todoModels = await api.query;
     // const todos = await todoModel.find();
     res.status(200).json(todoModels);
