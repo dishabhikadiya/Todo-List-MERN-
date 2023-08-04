@@ -17,15 +17,25 @@ class Api {
     return this;
   }
   filter() {
+    console.log("===========================", this.query, this.querystr);
     const queryCopy = { ...this.queryStr };
 
-    const removeFields = ["keyword", "page", "limit"];
+    const removeFields = [
+      "keyword",
+      "page",
+      "limit",
+      "resultPerPage",
+      "sortkey",
+      "sortorder",
+    ];
 
     removeFields.forEach((key) => delete queryCopy[key]);
 
     // Filter For Price and Rating
 
     let queryStr = JSON.stringify(queryCopy);
+
+    console.log("queryStr", queryStr);
 
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
     console.log("queryStr: " + queryStr);
@@ -34,20 +44,19 @@ class Api {
 
     return this;
   }
-  peginetion() {
-    const currentPage = Number(this.queryStr.page) || 1;
-    let resultPerPage = Number(this.queryStr.resultPerPage) || 50;
-    const skip = resultPerPage * (currentPage - 1);
 
-    this.query = this.query.limit(+resultPerPage).skip(+skip);
-
+  pagination(resultperpage) {
+    const currentpage = Number(this.querystr.page) || 1;
+    const skip = resultperpage * (currentpage - 1);
+    this.query = this.query.limit(resultperpage).skip(skip);
     return this;
   }
+
   sort() {
-    let val = this.queryStr.sortorder;
-    let key = this.queryStr.sortkey;
+    let val = this.querystr.sortorder;
+    let key = this.querystr.sortkey;
     console.log("val", val, "key", key);
-    this.query = this.query.sort({ [key]: val === "desc" ? -1 : 1 });
+    this.query = this.query.sort({ [key]: val });
     return this;
   }
 }

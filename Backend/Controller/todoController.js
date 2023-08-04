@@ -12,6 +12,7 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
       description,
       dueDate,
       status,
+      // user: req.user.id,
     });
     console.log(newTodo);
     const savedTodo = await newTodo.save();
@@ -25,14 +26,19 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
 // FIND TODOS
 exports.todoFind = catchAsyncErrors(async (req, res) => {
   try {
-    console.log("ress", req.query);
-    let api = new Api(todoModel.find(), req.query).search().filter();
-    console.log("api", api);
-    const query = todoModels.find(this.queryStr);
-    query.pagination().sort();
-    const todoModels = await api.query;
-    // const todos = await todoModel.find();
-    res.status(200).json(todoModels);
+    console.log("ress------------", req.query);
+    const resultperpage = 10;
+    let api = new Api(todoModel.find(), req.query).search().filter().sort();
+
+    let todoModels = await api.query;
+
+    let filteredCount = todoModels.length;
+
+    api.pagination();
+
+    todoModels = await api.query.clone();
+
+    res.status(200).json(todoModels, resultperpage, filteredCount);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
