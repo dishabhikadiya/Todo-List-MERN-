@@ -1,5 +1,4 @@
 import * as React from "react";
-import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -17,15 +16,14 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import DataTable from "./Details";
-import { useState } from "react";
-import axios from "axios";
+// import { useState } from "react";
 
 const Todo = () => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [setSearchResults] = useState([]);
 
   const [formData, setFormData] = React.useState({
     title: "",
@@ -47,7 +45,10 @@ const Todo = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        dueDate: new Date(formData.dueDate).getTime(),
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -58,17 +59,17 @@ const Todo = () => {
       });
   };
 
-  const handleInputChangee = (event) => {
-    setSearchQuery(event?.target?.value);
-    axios
-      .get(`http://localhost:3000/api/find?keyword=${searchQuery}`)
-      .then((response) => {
-        setSearchResults(response?.data);
-      })
-      .catch((error) => {
-        console.error("Error searching:", error);
-      });
-  };
+  // const handleInputChangee = (event) => {
+  //   setSearchQuery(event?.target?.value);
+  //   axios
+  //     .get(`http://localhost:3000/api/find?keyword=${searchQuery}`)
+  //     .then((response) => {
+  //       setSearchResults(response?.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error searching:", error);
+  //     });
+  // };
   const style = {
     position: "absolute",
     top: "50%",
@@ -93,23 +94,6 @@ const Todo = () => {
           >
             <AddIcon onClick={handleOpen} />
           </IconButton>
-          {/* <Search>
-            <SearchIconWrapper
-            // onChange={(e) => setKeyword(e.target.value)}
-            >
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-              value={searchQuery}
-              onChange={handleInputChangee}
-              // onChange={searchSubmitHendler}
-            />
-            {searchResults.map((result) => (
-              <>{console.log("Id", result?.title)}</>
-            ))}
-          </Search> */}
         </Toolbar>
       </AppBar>
       <CssBaseline />
@@ -173,9 +157,9 @@ const Todo = () => {
                         name="priority"
                         onChange={handleInputChange}
                       >
-                        <MenuItem value="Low">Low</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value={"low"}>Low</MenuItem>
+                        <MenuItem value={"medium"}>Medium</MenuItem>
+                        <MenuItem value={"high"}>High</MenuItem>
                       </Select>
                     </FormControl>
                     <FormControl sx={{ minWidth: 120, m: 1 }}>
@@ -190,8 +174,8 @@ const Todo = () => {
                         onChange={handleInputChange}
                       >
                         <MenuItem value={"pending"}>Pending</MenuItem>
-                        <MenuItem value={"In-Progress"}>In-Progress</MenuItem>
-                        <MenuItem value={"Completed"}>Completed</MenuItem>
+                        <MenuItem value={"in-Progress"}>In-Progress</MenuItem>
+                        <MenuItem value={"completed"}>Completed</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>

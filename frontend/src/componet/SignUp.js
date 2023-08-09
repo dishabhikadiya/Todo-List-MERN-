@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -38,11 +38,11 @@ const defaultTheme = createTheme();
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  // const [formData, setFormData] = useState({
+  //   name: "",
+  //   email: "",
+  //   password: "",
+  // });
   const validationSchema = yup.object({
     name: yup.string().required("Full name is required"),
     email: yup.string().email("Invalid email").required("Email is required"),
@@ -73,27 +73,27 @@ export default function SignUp() {
     },
   });
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  // const handleChange = (event) => {
+  //   const { name, value } = event.target;
+  //   setFormData({ ...formData, [name]: value });
+  // };
   // console.log("=====", formData);
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
 
-    const apiUrl = "http://localhost:3000/api/register";
+  //   const apiUrl = "http://localhost:3000/api/register";
 
-    axios
-      .post(apiUrl, formData)
-      .then((response) => {
-        // validator.isEmail("foo@bar.com");
-        navigate("/dashboard");
-        console.log("Registration successful!", response.data);
-      })
-      .catch((error) => {
-        console.error("Registration failed!", error);
-      });
-  };
+  //   axios
+  //     .post(apiUrl, formData)
+  //     .then((response) => {
+  //       // validator.isEmail("foo@bar.com");
+  //       navigate("/dashboard");
+  //       console.log("Registration successful!", response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Registration failed!", error);
+  //     });
+  // };
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">

@@ -19,7 +19,12 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
-import SearchIcon from "@mui/icons-material/Search";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers-pro";
+import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
+import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import { styled, alpha } from "@mui/material/styles";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -45,7 +50,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   alignItems: "center",
   justifyContent: "center",
 }));
-export default function DataTable(id) {
+export default function DataTable(id, { onFilter }) {
   const [dataToUpdate, setDataToUpdate] = useState({
     title: "",
     description: "",
@@ -53,13 +58,14 @@ export default function DataTable(id) {
     priority: "",
     status: "",
   });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState();
+  const [searchQuery, setSearchQuery] = useState();
   const [todoId, setTodoId] = useState("");
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [sort, setSort] = useState(1);
+  const [dueDateLt, setdueDatelt] = useState();
+  const [dueDateGt, setdueDateGt] = useState();
   // const [page, setPage] = useState(0);
   // const [pageSize, setPageSize] = useState(5);
   // const [resultCount, setResultCount] = useState();
@@ -97,15 +103,16 @@ export default function DataTable(id) {
     },
     {
       field: "priority",
-      headerName: "Priority",
+      headerName: "priority",
       width: 80,
     },
     {
       field: "status",
       flex: 1,
-      headerName: "Status",
+      headerName: "status",
       width: 90,
     },
+    { field: "dueDate", flex: 1, headerName: "Date", width: 90 },
     {
       field: "delete",
       flex: 1,
@@ -144,6 +151,7 @@ export default function DataTable(id) {
       },
     },
   ];
+
   const [openn, setOpenn] = React.useState(false);
 
   const handleClickOpenn = () => {
@@ -159,20 +167,33 @@ export default function DataTable(id) {
     fetchTodos();
   }, [sort, searchQuery]);
 
-  const handleSearch = () => {
-    fetchTodos();
-  };
+  // const handleSearch = () => {
+  //   fetchTodos();
+  // };
 
   const fetchTodos = async () => {
     try {
-      let addQuery;
+      let addQuery = "";
       console.log("searchQuery", searchQuery);
       console.log("sort", sort);
+      console.log("Date", dueDateLt);
       if (sort) {
         addQuery = addQuery + `&sortkey=title&sortorder=${sort}`;
       }
       if (searchQuery) {
         addQuery = addQuery + `&keyword=${searchQuery}`;
+      }
+      if (dueDateGt && dueDateLt) {
+        const startTimestamp = dueDateGt.getTime();
+        const endTimestamp = dueDateLt.getTime();
+        addQuery =
+          addQuery +
+          `&dueDate[gt]=${startTimestamp}&dueDate[lt]=${endTimestamp}`;
+        console.log("startTimestamp", startTimestamp);
+        console.log("endTimestamp", endTimestamp);
+        console.log("dueDateLt", dueDateLt);
+        console.log("dueDateGt", dueDateGt);
+        // onFilter({ start: startTimestamp, end: endTimestamp });
       }
       console.log("url", addQuery);
       const response = await fetch(
@@ -184,7 +205,14 @@ export default function DataTable(id) {
       }
       const data = await response.json();
       console.log("data?", data);
-      setTodos(data?.map((item) => ({ ...item, id: item?._id })));
+      setTodos(
+        data?.task?.map((item) => ({
+          ...item,
+          id: item?._id,
+
+          dueDate: new Date(item?.dueDate).toLocaleDateString(),
+        }))
+      );
     } catch (error) {
       console.error("Error fetching todos", error);
     }
@@ -261,6 +289,38 @@ export default function DataTable(id) {
           </Select>
         </FormControl>
       </Search>
+
+      {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DemoContainer components={["DateRangePicker"]}>
+          <DateRangePicker
+            localeText={{ start: "Check-in", end: "Check-out" }}
+            // value={dueDateLt}
+            // onClick={(e) => {
+            //   console.log(e);
+            //   setdueDatelt(e?.target?.value);
+            // }}
+          />
+        </DemoContainer>
+      </LocalizationProvider> */}
+
+      <DatePicker
+        selected={dueDateGt}
+        onChange={(date) => setdueDateGt(date)}
+        selectsStart
+        startDate={dueDateGt}
+        endDate={dueDateLt}
+        placeholderText="Start Date"
+      />
+      <DatePicker
+        selected={dueDateLt}
+        onChange={(date) => setdueDatelt(date)}
+        selectsEnd
+        startDate={dueDateGt}
+        endDate={dueDateLt}
+        minDate={dueDateGt}
+        placeholderText="End Date"
+      />
+      <button onClick={fetchTodos}>Apply Filter</button>
       <Dialog
         open={openn}
         onClose={handleClosee}
@@ -287,13 +347,11 @@ export default function DataTable(id) {
       <DataGrid
         rows={todos}
         columns={columns}
-        initialState={
-          {
-            pagination: {
+        initialState={{
+          pagination: {
             paginationModel: { page: 0, pageSize: 5 },
-            },
-          }
-        }
+          },
+        }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
       />
@@ -362,9 +420,9 @@ export default function DataTable(id) {
                         value={dataToUpdate?.priority}
                         onChange={handleInputChange}
                       >
-                        <MenuItem value={"Low"}>Low</MenuItem>
-                        <MenuItem value={"Medium"}>Medium</MenuItem>
-                        <MenuItem value={"High"}>High</MenuItem>
+                        <MenuItem value={"low"}>Low</MenuItem>
+                        <MenuItem value={"medium"}>Medium</MenuItem>
+                        <MenuItem value={"high"}>High</MenuItem>
                       </Select>
                     </FormControl>
                     <FormControl sx={{ minWidth: 120, m: 1 }}>
@@ -379,9 +437,9 @@ export default function DataTable(id) {
                         value={dataToUpdate?.status}
                         onChange={handleInputChange}
                       >
-                        <MenuItem value={"Pending"}>Pending</MenuItem>
-                        <MenuItem value={"In-progress"}>In-Progress</MenuItem>
-                        <MenuItem value={"Completed"}>Completed</MenuItem>
+                        <MenuItem value={"pending"}>Pending</MenuItem>
+                        <MenuItem value={"in-progress"}>In-Progress</MenuItem>
+                        <MenuItem value={"completed"}>Completed</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>

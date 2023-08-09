@@ -1,13 +1,14 @@
-class Api {
-  constructor(query, querystr) {
+class ApiFeatures {
+  constructor(query, queryStr) {
     this.query = query;
-    this.querystr = querystr;
+    this.queryStr = queryStr;
   }
+
   search() {
-    const keyword = this.querystr.keyword
+    const keyword = this.queryStr.keyword
       ? {
           title: {
-            $regex: this.querystr.keyword,
+            $regex: this.queryStr.keyword,
             $options: "i",
           },
         }
@@ -16,8 +17,8 @@ class Api {
     this.query = this.query.find({ ...keyword });
     return this;
   }
+
   filter() {
-    console.log("===========================", this.query, this.querystr);
     const queryCopy = { ...this.queryStr };
 
     const removeFields = [
@@ -35,8 +36,6 @@ class Api {
 
     let queryStr = JSON.stringify(queryCopy);
 
-    console.log("queryStr", queryStr);
-
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
     console.log("queryStr: " + queryStr);
 
@@ -45,19 +44,22 @@ class Api {
     return this;
   }
 
-  pagination(resultperpage) {
-    const currentpage = Number(this.querystr.page) || 1;
-    const skip = resultperpage * (currentpage - 1);
-    this.query = this.query.limit(resultperpage).skip(skip);
+  pagination() {
+    const currentPage = Number(this.queryStr.page) || 1;
+    let resultPerPage = Number(this.queryStr.resultPerPage) || 50;
+    const skip = resultPerPage * (currentPage - 1);
+
+    this.query = this.query.limit(+resultPerPage).skip(+skip);
+
     return this;
   }
 
   sort() {
-    let val = this.querystr.sortorder;
-    let key = this.querystr.sortkey;
+    let val = this.queryStr.sortorder;
+    let key = this.queryStr.sortkey;
     console.log("val", val, "key", key);
-    this.query = this.query.sort({ [key]: val });
+    this.query = this.query.sort({ [key]: val === "desc" ? -1 : 1 });
     return this;
   }
 }
-module.exports = Api;
+module.exports = ApiFeatures;

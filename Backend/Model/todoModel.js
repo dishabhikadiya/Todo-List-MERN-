@@ -26,7 +26,7 @@ const todoSchema = new mongoose.Schema(
       default: "pending",
     },
     dueDate: {
-      type: Date,
+      type: Number,
       required: true,
     },
   },

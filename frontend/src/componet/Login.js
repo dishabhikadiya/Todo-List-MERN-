@@ -40,7 +40,10 @@ const defaultTheme = createTheme();
 export default function Login() {
   // const alert = useAlert();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [
+    formData,
+    //  setFormData
+  ] = useState({
     email: "",
     password: "",
   });
@@ -80,38 +83,38 @@ export default function Login() {
         });
     },
   });
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  // const handleChange = (event) => {
+  //   const { name, value } = event.target;
+  //   setFormData({ ...formData, [name]: value });
+  // };
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
 
-    fetch("http://localhost:3000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        navigate("/dashboard");
-        // alert.success("Login successful");
-        console.log("Login successful!", data.token);
-      })
-      .catch((error) => {
-        console.error("Login failed!");
-      });
-    // if (!formData?.email && !formData?.password) {
-    //   console.log("pleace enter velid email and password");
-    // }
-  };
+  //   fetch("http://localhost:3000/api/login", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(formData),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error("Network response was not ok");
+  //       }
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       navigate("/dashboard");
+  //       // alert.success("Login successful");
+  //       console.log("Login successful!", data.token);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Login failed!");
+  //     });
+  //   // if (!formData?.email && !formData?.password) {
+  //   //   console.log("pleace enter velid email and password");
+  //   // }
+  // };
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
