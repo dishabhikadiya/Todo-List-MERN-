@@ -21,10 +21,6 @@ import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers-pro";
-import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
-import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import { styled, alpha } from "@mui/material/styles";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -50,7 +46,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   alignItems: "center",
   justifyContent: "center",
 }));
-export default function DataTable(id, { onFilter }) {
+export default function DataTable(id) {
   const [dataToUpdate, setDataToUpdate] = useState({
     title: "",
     description: "",
@@ -66,11 +62,12 @@ export default function DataTable(id, { onFilter }) {
   const [sort, setSort] = useState(1);
   const [dueDateLt, setdueDatelt] = useState();
   const [dueDateGt, setdueDateGt] = useState();
-  // const [page, setPage] = useState(0);
-  // const [pageSize, setPageSize] = useState(5);
-  // const [resultCount, setResultCount] = useState();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [resultCount, setResultCount] = useState(0);
   const [deleteid, setDeleteId] = useState("");
-
+  const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState("");
   const style = {
     position: "absolute",
     top: "50%",
@@ -165,7 +162,7 @@ export default function DataTable(id, { onFilter }) {
 
   useEffect(() => {
     fetchTodos();
-  }, [sort, searchQuery]);
+  }, [sort, searchQuery, page, pageSize, priority, status]);
 
   // const handleSearch = () => {
   //   fetchTodos();
@@ -177,6 +174,9 @@ export default function DataTable(id, { onFilter }) {
       console.log("searchQuery", searchQuery);
       console.log("sort", sort);
       console.log("Date", dueDateLt);
+      if (status) {
+        addQuery = addQuery + `&status=${status}`;
+      }
       if (sort) {
         addQuery = addQuery + `&sortkey=title&sortorder=${sort}`;
       }
@@ -189,30 +189,30 @@ export default function DataTable(id, { onFilter }) {
         addQuery =
           addQuery +
           `&dueDate[gt]=${startTimestamp}&dueDate[lt]=${endTimestamp}`;
-        console.log("startTimestamp", startTimestamp);
-        console.log("endTimestamp", endTimestamp);
-        console.log("dueDateLt", dueDateLt);
-        console.log("dueDateGt", dueDateGt);
-        // onFilter({ start: startTimestamp, end: endTimestamp });
       }
       console.log("url", addQuery);
       const response = await fetch(
-        `http://localhost:3000/api/find?page=1&resultPerPage=10${addQuery}`
+        `http://localhost:3000/api/find?page=${page}&resultPerPage=${pageSize}${addQuery}`
       );
       if (!response.ok) {
         console.log("response", response);
         throw new Error("Failed to fetch todos");
       }
+      if (priority) {
+        addQuery = addQuery + `&sortkey=priority&sortorder=${priority}`;
+      }
+
       const data = await response.json();
       console.log("data?", data);
       setTodos(
         data?.task?.map((item) => ({
           ...item,
           id: item?._id,
-
           dueDate: new Date(item?.dueDate).toLocaleDateString(),
         }))
       );
+      setPageSize(data?.resultPerPage);
+      setResultCount(data?.taskCount);
     } catch (error) {
       console.error("Error fetching todos", error);
     }
@@ -288,21 +288,43 @@ export default function DataTable(id, { onFilter }) {
             <MenuItem value="-1">Descending </MenuItem>
           </Select>
         </FormControl>
+
+        <FormControl sx={{ minWidth: 120, m: 1 }}>
+          <InputLabel id="demo-simple-select-label">Status</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Status"
+            name="status"
+            value={status}
+            onChange={(e) => {
+              setStatus(e?.target?.value);
+            }}
+          >
+            <MenuItem value={"pending"}>Pending</MenuItem>
+            <MenuItem value={"in-progress"}>In-Progress</MenuItem>
+            <MenuItem value={"completed"}>Completed</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl sx={{ minWidth: 120, m: 1 }}>
+          <InputLabel id="demo-simple-select-label">Priority</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Priority"
+            name="priority"
+            value={priority}
+            onChange={(e) => {
+              setPriority(e?.target?.value);
+            }}
+          >
+            <MenuItem value={"low"}>Low</MenuItem>
+            <MenuItem value={"medium"}>Medium</MenuItem>
+            <MenuItem value={"high"}>High</MenuItem>
+          </Select>
+        </FormControl>
       </Search>
-
-      {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DemoContainer components={["DateRangePicker"]}>
-          <DateRangePicker
-            localeText={{ start: "Check-in", end: "Check-out" }}
-            // value={dueDateLt}
-            // onClick={(e) => {
-            //   console.log(e);
-            //   setdueDatelt(e?.target?.value);
-            // }}
-          />
-        </DemoContainer>
-      </LocalizationProvider> */}
-
       <DatePicker
         selected={dueDateGt}
         onChange={(date) => setdueDateGt(date)}
@@ -347,13 +369,19 @@ export default function DataTable(id, { onFilter }) {
       <DataGrid
         rows={todos}
         columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
-          },
-        }}
-        pageSizeOptions={[5, 10]}
         checkboxSelection
+        pagination
+        rowsPerPageOptions={[5]}
+        page={page === 0 ? 0 : page - 1}
+        paginationMode="server"
+        pageSize={pageSize}
+        onPageChange={(newPage) => {
+          setPage(newPage + 1);
+        }}
+        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        disableColumnMenu={true}
+        hideFooterSelectedRowCount={true}
+        rowCount={resultCount ?? 0}
       />
 
       <Container maxWidth="sm">

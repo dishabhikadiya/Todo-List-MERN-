@@ -28,7 +28,7 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
 exports.todoFind = catchAsyncErrors(async (req, res) => {
   try {
     const taskCount = await Todo.find().countDocuments();
-    console.log("check?",req.query);
+    console.log("check?", req.query);
     const apiFeature = new Api(Todo.find(), req.query).search().filter().sort();
 
     let task = await apiFeature.query;
