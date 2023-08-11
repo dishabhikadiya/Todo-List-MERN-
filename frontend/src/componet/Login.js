@@ -116,6 +116,7 @@ export default function Login() {
     try {
       const response = await axios.get("http://localhost:3000/api/logout");
       if (response.status === 200) {
+        navigate("/singup");
         console.log(response);
         localStorage.removeItem("authToken");
       }
@@ -203,7 +204,12 @@ export default function Login() {
               >
                 Login
               </Button>
-              <Button variant="outlined" onClick={LogoutButton}>
+              <Button
+                type="logout"
+                fullWidth
+                sx={{ mt: 1 }}
+                onClick={LogoutButton}
+              >
                 Logout
               </Button>
               <Grid container>
