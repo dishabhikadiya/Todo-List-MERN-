@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema({
     ref: "User",
     unique: true,
   },
-  token: {
-    type: String,
-    required: true,
-  },
+  // token: {
+  //   type: String,
+  //   required: true,
+  // },
 });
 
 const token = mongoose.model("token", userSchema);

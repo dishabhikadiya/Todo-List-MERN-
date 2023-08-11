@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     message: "pleace enter your password",
   },
+  token: {
+    type: String,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

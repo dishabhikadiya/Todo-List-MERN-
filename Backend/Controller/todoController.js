@@ -13,9 +13,10 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
       description,
       dueDate,
       status,
-      // user: req.user.id,
+      user: req.user.id,
     });
     console.log(newTodo);
+
     const savedTodo = await newTodo.save();
 
     res.status(201).json(savedTodo);
@@ -27,9 +28,12 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
 // FIND TODOS
 exports.todoFind = catchAsyncErrors(async (req, res) => {
   try {
-    const taskCount = await Todo.find().countDocuments();
+    const taskCount = await Todo.find({ user: req.user.id }).countDocuments();
     console.log("check?", req.query);
-    const apiFeature = new Api(Todo.find(), req.query).search().filter().sort();
+    const apiFeature = new Api(Todo.find({ user: req.user.id }), req.query)
+      .search()
+      .filter()
+      .sort();
 
     let task = await apiFeature.query;
 

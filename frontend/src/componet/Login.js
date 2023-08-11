@@ -13,9 +13,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { useFormik } from "formik";
-
-import * as yup from "yup";
+import axios from "axios";
 
 function Copyright(props) {
   return (
@@ -38,83 +36,94 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function Login() {
-  // const alert = useAlert();
+  // // const alert = useAlert();
   const navigate = useNavigate();
-  const [
-    formData,
-    //  setFormData
-  ] = useState({
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const validationSchema = yup.object({
-    email: yup.string().email("Invalid email").required("Email is required"),
-    password: yup
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .required("Password is required"),
-  });
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    validationSchema: validationSchema,
-    onSubmit: (value) => {
-      fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          navigate("/dashboard");
-          console.log("Login successful!", data.token);
-        })
-        .catch((error) => {
-          console.error("Login failed!", error);
-        });
-    },
-  });
-  // const handleChange = (event) => {
-  //   const { name, value } = event.target;
-  //   setFormData({ ...formData, [name]: value });
-  // };
-  // const handleSubmit = (event) => {
-  //   event.preventDefault();
+  // const validationSchema = yup.object({
+  //   email: yup.string().email("Invalid email").required("Email is required"),
+  //   password: yup
+  //     .string()
+  //     .min(6, "Password must be at least 6 characters")
+  //     .required("Password is required"),
+  // });
+  // const formik = useFormik({
+  //   initialValues: {
+  //     email: "",
+  //     password: "",
+  //   },
+  //   validationSchema: validationSchema,
+  //   onSubmit: (value) => {
+  //     fetch("http://localhost:3000/api/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(formData),
+  //     })
+  //       .then((response) => {
+  //         if (!response.ok) {
+  //           throw new Error("Network response was not ok");
+  //         }
+  //         return response.json();
+  //       })
+  //       .then((data) => {
+  //         navigate("/dashboard");
+  //         console.log("Login successful!", data.token);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Login failed!", error);
+  //       });
+  //   },
+  // });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
-  //   fetch("http://localhost:3000/api/login", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(formData),
-  //   })
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       navigate("/dashboard");
-  //       // alert.success("Login successful");
-  //       console.log("Login successful!", data.token);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Login failed!");
-  //     });
-  //   // if (!formData?.email && !formData?.password) {
-  //   //   console.log("pleace enter velid email and password");
-  //   // }
-  // };
+    fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        navigate("/todo");
+        // alert.success("Login successful");
+        console.log("Login successful!", data?.token);
+        localStorage.setItem("token", data?.token);
+      })
+      .catch((error) => {
+        console.error("Login failed!");
+      });
+    if (!formData?.email && !formData?.password) {
+      console.log("pleace enter velid email and password");
+    }
+  };
+
+  const LogoutButton = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/logout");
+      if (response.status === 200) {
+        console.log(response);
+        localStorage.removeItem("authToken");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -155,7 +164,7 @@ export default function Login() {
             <Box
               component="form"
               noValidate
-              onSubmit={formik.handleSubmit}
+              onSubmit={handleSubmit}
               sx={{ mt: 1 }}
             >
               <TextField
@@ -167,10 +176,8 @@ export default function Login() {
                 name="email"
                 autoComplete="email"
                 autoFocus
-                value={formik?.formData?.email}
-                onChange={formik?.handleChange}
-                error={formik?.touched.email && Boolean(formik?.errors?.email)}
-                helperText={formik?.touched.email && formik?.errors?.email}
+                value={formData?.email}
+                onChange={handleChange}
               />
               <TextField
                 margin="normal"
@@ -181,15 +188,8 @@ export default function Login() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                // helperText="Incorrect entry."
-                value={formik?.formData?.password}
-                onChange={formik?.handleChange}
-                error={
-                  formik?.touched?.password && Boolean(formik?.errors?.password)
-                }
-                helperText={
-                  formik?.touched?.password && formik?.errors?.password
-                }
+                value={formData?.password}
+                onChange={handleChange}
               />
               <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
@@ -202,6 +202,9 @@ export default function Login() {
                 sx={{ mt: 3, mb: 2 }}
               >
                 Login
+              </Button>
+              <Button variant="outlined" onClick={LogoutButton}>
+                Logout
               </Button>
               <Grid container>
                 <Grid item xs>

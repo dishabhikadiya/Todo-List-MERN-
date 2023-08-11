@@ -64,7 +64,7 @@ export default function SignUp() {
       axios
         .post(apiUrl, value)
         .then((response) => {
-          navigate("/dashboard");
+          navigate("/todo");
           console.log("Registration successful!", response.data);
         })
         .catch((error) => {

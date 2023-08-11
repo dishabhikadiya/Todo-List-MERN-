@@ -47,6 +47,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   justifyContent: "center",
 }));
 export default function DataTable(id) {
+  const token = localStorage.getItem("token");
   const [dataToUpdate, setDataToUpdate] = useState({
     title: "",
     description: "",
@@ -191,8 +192,16 @@ export default function DataTable(id) {
           `&dueDate[gt]=${startTimestamp}&dueDate[lt]=${endTimestamp}`;
       }
       console.log("url", addQuery);
+
       const response = await fetch(
-        `http://localhost:3000/api/find?page=${page}&resultPerPage=${pageSize}${addQuery}`
+        `http://localhost:3000/api/find?page=${page}&resultPerPage=${pageSize}${addQuery}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       if (!response.ok) {
         console.log("response", response);
@@ -220,13 +229,29 @@ export default function DataTable(id) {
 
   const handleDelete = () => {
     console.log("id", id);
-    axios
-      .delete(`http://localhost:3000/api/delete/${deleteid}`)
+    fetch(`http://localhost:3000/api/delete/${deleteid}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => {
-        console.log("Todo deleted:", response?.data);
+        if (response.status === 401) {
+          throw new Error("Unauthorized");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        fetchTodos();
       })
       .catch((error) => {
-        console.error("Error deleting todo:", error);
+        if (error.message === "Unauthorized") {
+          console.log(error);
+        } else {
+          alert(`${error}`);
+        }
       });
   };
 
@@ -240,7 +265,17 @@ export default function DataTable(id) {
 
   const handleUpdate = () => {
     axios
-      .put(`http://localhost:3000/api/todoUpdate/${todoId}`, dataToUpdate)
+      .put(
+        `http://localhost:3000/api/todoUpdate/${todoId}`,
+
+        dataToUpdate,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
       .then((response) => {
         console.log("Data updated:", response?.data);
       })

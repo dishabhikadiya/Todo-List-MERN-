@@ -24,6 +24,8 @@ const Todo = () => {
   const handleClose = () => setOpen(false);
   // const [searchQuery, setSearchQuery] = useState("");
   // const [setSearchResults] = useState([]);
+  const token = localStorage.getItem("token");
+  console.log("token=======================", token);
 
   const [formData, setFormData] = React.useState({
     title: "",
@@ -43,6 +45,7 @@ const Todo = () => {
     fetch("http://localhost:3000/api/todo", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

@@ -53,11 +53,31 @@ exports.login = catchAsyncErrors(async (req, res) => {
       { userId: user._id, email: user.email },
       "EFREGDFBY65TGHJU7765GBHNMKUFDVGT5H67JNYTYN5YN65"
     );
-    user.token = token;
-    await Token.create({ token: token, user_id: user._id });
+    User.token = token;
     console.log("Token", token);
+    await User.updateOne(
+      { email: email },
+      {
+        token: token,
+      }
+    );
     return res.status(200).json({ token });
   } catch (err) {
+    console.log(err.message);
     return res.status(500).json({ message: "Failed to log in" });
   }
+});
+
+// LOGOUT
+
+exports.logout = catchAsyncErrors(async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged Out",
+  });
 });
