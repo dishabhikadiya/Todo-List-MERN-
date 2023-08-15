@@ -22,6 +22,8 @@ import Box from "@mui/material/Box";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { styled, alpha } from "@mui/material/styles";
+import Avatar from "@mui/material/Avatar";
+
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -69,6 +71,8 @@ export default function DataTable(id) {
   const [deleteid, setDeleteId] = useState("");
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("");
+  const [imageUrl, setImageUrl] = useState(null);
+
   const style = {
     position: "absolute",
     top: "50%",
@@ -111,6 +115,15 @@ export default function DataTable(id) {
       width: 90,
     },
     { field: "dueDate", flex: 1, headerName: "Date", width: 90 },
+    {
+      field: "image",
+      flex: 1,
+      headerName: "image",
+      width: 50,
+      renderCell: (row) => {
+        return <Avatar src={imageUrl?.images} />;
+      },
+    },
     {
       field: "delete",
       flex: 1,
@@ -283,7 +296,16 @@ export default function DataTable(id) {
         console.error("Error updating data:", error);
       });
   };
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
 
+    reader.onloadend = () => {
+      setImageUrl(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
   return (
     <div
       style={{
@@ -429,6 +451,11 @@ export default function DataTable(id) {
           >
             <Box sx={style}>
               <Container maxWidth="sm">
+                {imageUrl && (
+                  <Stack direction="row" spacing={4}>
+                    <Avatar alt="Cindy Baker" src={imageUrl} />
+                  </Stack>
+                )}
                 <form
                   onClick={() => {
                     handleUpdate();
@@ -437,6 +464,18 @@ export default function DataTable(id) {
                   <Typography variant="h5" gutterBottom>
                     Update Todo
                   </Typography>
+                  <label htmlFor="upload-image">
+                    <Button variant="contained" component="span">
+                      Upload
+                    </Button>
+                    <input
+                      id="upload-image"
+                      hidden
+                      accept="image/*"
+                      type="file"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
                   <TextField
                     label="Title"
                     name="title"

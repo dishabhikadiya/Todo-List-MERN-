@@ -4,15 +4,20 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const bcrypt = require("bcrypt");
 const Api = require("../Untils/api");
 const Todo = require("../Model/todoModel");
+const path = require("path");
+const imagepath = path.join("uplodes");
+const fs = require("fs");
 // CREATE TODO
 exports.createTodo = catchAsyncErrors(async (req, res) => {
   try {
     const { title, description, dueDate, status } = req.body;
+    let images = `${imagepath}/${req.file.filename}`;
     const newTodo = new todoModel({
       title,
       description,
       dueDate,
       status,
+      images,
       user: req.user.id,
     });
     console.log(newTodo);
@@ -21,6 +26,7 @@ exports.createTodo = catchAsyncErrors(async (req, res) => {
 
     res.status(201).json(savedTodo);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -30,6 +36,7 @@ exports.todoFind = catchAsyncErrors(async (req, res) => {
   try {
     const taskCount = await Todo.find({ user: req.user.id }).countDocuments();
     console.log("check?", req.query);
+    console.log("==========", req.user.email);
     const apiFeature = new Api(Todo.find({ user: req.user.id }), req.query)
       .search()
       .filter()
@@ -122,6 +129,16 @@ exports.update = catchAsyncErrors(async (req, res) => {
       },
       { new: true }
     );
+
+    // if (req.file) {
+    //   let images = `${imagepath}/${req.file.filename}`;
+    //   const updated = await Todo.findByIdAndUpdate(
+    //     id,
+    //     Object.assign({ images }, req.body)
+    //   );
+    //   fs.unlinkSync(updated.images);
+    //   res.status(200).json({ success: true, data: updated });
+    // }
     res.status(200).json(updateTodos);
     if (!updateTodos) {
       return res.status(404).json({ error: "Todo not found" });

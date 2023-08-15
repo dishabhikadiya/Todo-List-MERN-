@@ -1,9 +1,11 @@
 const jwtMiddleware = require("../middleware/jwt");
 const jwt = require("jsonwebtoken");
 const User = require("../Model/userModel");
-const Token = require("../Model/loginModel");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
+const path = require("path");
+const imagespath = path.join("uplodes");
 
 // USER REGISTER API
 exports.register = catchAsyncErrors(async (req, res) => {
@@ -79,5 +81,23 @@ exports.logout = catchAsyncErrors(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Logged Out",
+  });
+});
+
+// GET USER DETAILS
+
+exports.getUser = catchAsyncErrors(async (req, res, next) => {
+  // const user = await User.findById(req?.user?.userId);
+  console.log("rrrrrrrrr", req?.user?.userId);
+  const uEmail = req?.user?.email;
+  console.log(uEmail);
+
+  const data = await User.findOne({ email: uEmail });
+  console.log("==========", data);
+
+  console.log("uyjsafdth");
+  res.status(200).json({
+    success: true,
+    data,
   });
 });
