@@ -13,7 +13,6 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 function Copyright(props) {
   return (
@@ -36,48 +35,11 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function Login() {
-  // // const alert = useAlert();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  // const validationSchema = yup.object({
-  //   email: yup.string().email("Invalid email").required("Email is required"),
-  //   password: yup
-  //     .string()
-  //     .min(6, "Password must be at least 6 characters")
-  //     .required("Password is required"),
-  // });
-  // const formik = useFormik({
-  //   initialValues: {
-  //     email: "",
-  //     password: "",
-  //   },
-  //   validationSchema: validationSchema,
-  //   onSubmit: (value) => {
-  //     fetch("http://localhost:3000/api/login", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(formData),
-  //     })
-  //       .then((response) => {
-  //         if (!response.ok) {
-  //           throw new Error("Network response was not ok");
-  //         }
-  //         return response.json();
-  //       })
-  //       .then((data) => {
-  //         navigate("/dashboard");
-  //         console.log("Login successful!", data.token);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Login failed!", error);
-  //       });
-  //   },
-  // });
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
@@ -100,7 +62,6 @@ export default function Login() {
       })
       .then((data) => {
         navigate("/todo");
-        // alert.success("Login successful");
         console.log("Login successful!", data?.token);
         localStorage.setItem("token", data?.token);
       })
@@ -109,19 +70,6 @@ export default function Login() {
       });
     if (!formData?.email && !formData?.password) {
       console.log("pleace enter velid email and password");
-    }
-  };
-
-  const LogoutButton = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/api/logout");
-      if (response.status === 200) {
-        navigate("/singup");
-        console.log(response);
-        localStorage.removeItem("authToken");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
     }
   };
 
@@ -204,19 +152,11 @@ export default function Login() {
               >
                 Login
               </Button>
-              <Button
-                type="logout"
-                fullWidth
-                sx={{ mt: 1 }}
-                onClick={LogoutButton}
-              >
-                Logout
-              </Button>
               <Grid container>
                 <Grid item xs>
-                  {/* <Link href="#" variant="body2">
+                  <Link href="#" variant="body2">
                     Forgot password?
-                  </Link> */}
+                  </Link>
                 </Grid>
                 <Grid item>
                   <Link href="singup" variant="body2">

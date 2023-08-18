@@ -38,11 +38,6 @@ const defaultTheme = createTheme();
 
 export default function SignUp() {
   const navigate = useNavigate();
-  // const [formData, setFormData] = useState({
-  //   name: "",
-  //   email: "",
-  //   password: "",
-  // });
   const validationSchema = yup.object({
     name: yup.string().required("Full name is required"),
     email: yup.string().email("Invalid email").required("Email is required"),
@@ -72,28 +67,6 @@ export default function SignUp() {
         });
     },
   });
-
-  // const handleChange = (event) => {
-  //   const { name, value } = event.target;
-  //   setFormData({ ...formData, [name]: value });
-  // };
-  // console.log("=====", formData);
-  // const handleSubmit = (event) => {
-  //   event.preventDefault();
-
-  //   const apiUrl = "http://localhost:3000/api/register";
-
-  //   axios
-  //     .post(apiUrl, formData)
-  //     .then((response) => {
-  //       // validator.isEmail("foo@bar.com");
-  //       navigate("/dashboard");
-  //       console.log("Registration successful!", response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Registration failed!", error);
-  //     });
-  // };
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -134,22 +107,6 @@ export default function SignUp() {
                   helperText={formik?.touched.name && formik?.errors?.name}
                 />
               </Grid>
-              {/* <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="name"
-                  label="name"
-                  name="name"
-                  autoComplete="name"
-                  // value={formData.name}
-                  // onChange={handleChange}
-                  value={formik?.formData?.name}
-                  onChange={handleChange}
-                  error={formik?.touched?.name && Boolean(formik?.errors?.name)}
-                  helperText={formik?.touched?.name && formik?.errors?.name}
-                />
-              </Grid> */}
               <Grid item xs={12}>
                 <TextField
                   required

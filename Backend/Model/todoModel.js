@@ -1,19 +1,12 @@
 const mongoose = require("mongoose");
 const todoSchema = new mongoose.Schema(
   {
-    // user: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: "User",
-    //   required: true,
-    // },
     title: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
       default: "",
-      required: true,
     },
     priority: {
       type: String,
@@ -22,16 +15,14 @@ const todoSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed"],
+      enum: ["pending", "in-Progress", "completed"],
       default: "pending",
     },
     dueDate: {
       type: Number,
-      required: true,
     },
     images: {
       type: String,
-      required: true,
     },
   },
   { timestamps: true }

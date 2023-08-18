@@ -7,8 +7,8 @@ const todo = require("./Routes/todoRoute");
 const path = require("path");
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(bodyParser.json({ limit: "50mb" }));
 app.use("/uplodes", express.static("uplodes"));
 app.use("/api", user);
 app.use("/api", todo);

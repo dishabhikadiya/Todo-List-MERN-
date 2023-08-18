@@ -1,6 +1,6 @@
 const multer = require("multer");
 const path = require("path");
-const imagespath = path.join("uplodes");
+const imagespath = path.join("uplodes/");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

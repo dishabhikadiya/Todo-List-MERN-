@@ -19,14 +19,12 @@ import DataTable from "./Details";
 import Avatar from "@mui/material/Avatar";
 import Menu from "@mui/material/Menu";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 
 const Todo = () => {
   const navigate = useNavigate();
@@ -36,7 +34,7 @@ const Todo = () => {
   const [openn, setOpenn] = useState(false);
   const handleOpenn = () => setOpenn(true);
   const handleClosee = () => setOpenn(false);
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrl, setImageUrl] = useState();
   const [user, setUser] = useState();
   const token = localStorage.getItem("token");
   console.log("token=======================", token);
@@ -49,39 +47,58 @@ const Todo = () => {
     setAnchorEl(null);
   };
 
-  const [formData, setFormData] = useState({
+  const [myData, setFormData] = useState({
     title: "",
     description: "",
     dueDate: "",
+    images: "",
+    status: "",
+    priority: "",
   });
+  const handleFileChange = (event) => {
+    setImageUrl(event.target.files[0]);
+  };
+
+  console.log("imageurl", imageUrl);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    console.log("namw:", name, "value", value);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    fetch("http://localhost:3000/api/todo", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...formData,
-        dueDate: new Date(formData.dueDate).getTime(),
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Todo added successfully:", data);
-      })
-      .catch((error) => {
-        console.error("Error adding todo:", error);
+    const formData = new FormData();
+    formData.append("title", myData?.title);
+    formData.append("description", myData?.description);
+    formData.append("status", myData?.status);
+    formData.append("priority", myData?.priority);
+    formData.append("dueDate", new Date(myData?.dueDate).getTime());
+    formData.append("images", imageUrl);
+
+    console.log("formData", formData, token);
+
+    try {
+      const response = await fetch("http://localhost:3000/api/todo", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Todo added successfully:", data);
+        setFormData(data);
+      } else {
+        console.error("Error adding todo:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error adding todo:", error);
+    }
   };
   useEffect(() => {
     userdata();
@@ -124,16 +141,6 @@ const Todo = () => {
     }
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      setImageUrl(reader.result);
-    };
-
-    reader.readAsDataURL(file);
-  };
   const stylee = {
     position: "absolute",
     top: "50%",
@@ -160,7 +167,6 @@ const Todo = () => {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          {/* <AccountCircleIcon onClick={handleOpenn} sx={{ mr: 3 }} /> */}
           <Modal
             open={openn}
             onClose={handleClosee}
@@ -230,16 +236,6 @@ const Todo = () => {
             <MenuItem onClick={handleOpenn}>
               <Avatar /> My account
             </MenuItem>
-            {/* <MenuItem onClick={handleCloseee}>
-              <Avatar /> My account
-            </MenuItem> */}
-            <Divider />
-            {/* <MenuItem onClick={handleCloseee}>
-              <ListItemIcon>
-                <PersonAdd fontSize="small" />
-              </ListItemIcon>
-              Add another account
-            </MenuItem> */}
             <MenuItem onClick={handleCloseee}>
               <ListItemIcon>
                 <Settings fontSize="small" />
@@ -275,31 +271,23 @@ const Todo = () => {
           >
             <Box sx={style}>
               <Container maxWidth="sm">
-                {imageUrl && (
-                  <Stack direction="row" spacing={4}>
-                    <Avatar alt="Cindy Baker" src={imageUrl} />
-                  </Stack>
-                )}
                 <form onSubmit={handleSubmit}>
                   <Typography variant="h5" gutterBottom>
                     Create Todo
                   </Typography>
-                  <label htmlFor="upload-image">
-                    <Button variant="contained" component="span">
-                      Upload
-                    </Button>
-                    <input
-                      id="upload-image"
-                      hidden
-                      accept="image/*"
-                      type="file"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
+                  <TextField
+                    type="file"
+                    label="Upload File"
+                    variant="outlined"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleFileChange}
+                  />
                   <TextField
                     label="Title"
                     name="title"
-                    value={formData.title}
+                    value={myData.title}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -308,7 +296,7 @@ const Todo = () => {
                   <TextField
                     label="Description"
                     name="description"
-                    value={formData.description}
+                    value={myData.description}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -320,7 +308,7 @@ const Todo = () => {
                     label="Due Date"
                     type="date"
                     name="dueDate"
-                    value={formData.dueDate}
+                    value={myData.dueDate}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -337,9 +325,9 @@ const Todo = () => {
                       <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={formData?.priority}
                         label="Priority"
                         name="priority"
+                        value={myData?.priority}
                         onChange={handleInputChange}
                       >
                         <MenuItem value={"low"}>Low</MenuItem>
@@ -354,8 +342,9 @@ const Todo = () => {
                       <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={formData?.status}
                         label="Status"
+                        name="status"
+                        value={myData?.status}
                         onChange={handleInputChange}
                       >
                         <MenuItem value={"pending"}>Pending</MenuItem>

@@ -14,6 +14,6 @@ router.post("/todo", jwtMiddleware, image, createTodo);
 router.get("/find", jwtMiddleware, todoFind);
 router.get("/findOne/:id", jwtMiddleware, oneRecordFind);
 router.delete("/delete/:id", jwtMiddleware, remove);
-router.put("/todoUpdate/:id", jwtMiddleware, update);
+router.put("/todoUpdate/:id", jwtMiddleware, image, update);
 
 module.exports = router;

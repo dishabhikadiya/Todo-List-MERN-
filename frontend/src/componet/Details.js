@@ -8,7 +8,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import axios from "axios";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -23,7 +22,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { styled, alpha } from "@mui/material/styles";
 import Avatar from "@mui/material/Avatar";
-
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -50,12 +48,13 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
 }));
 export default function DataTable(id) {
   const token = localStorage.getItem("token");
-  const [dataToUpdate, setDataToUpdate] = useState({
+  const [myData, setFormData] = useState({
     title: "",
     description: "",
-    duedate: "",
-    priority: "",
+    dueDate: "",
+    images: "",
     status: "",
+    priority: "",
   });
   const [searchQuery, setSearchQuery] = useState();
   const [todoId, setTodoId] = useState("");
@@ -68,11 +67,10 @@ export default function DataTable(id) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [resultCount, setResultCount] = useState(0);
-  const [deleteid, setDeleteId] = useState("");
-  const [priority, setPriority] = useState("");
-  const [status, setStatus] = useState("");
-  const [imageUrl, setImageUrl] = useState(null);
-
+  const [deleteid, setDeleteId] = useState();
+  const [priority, setPriority] = useState();
+  const [status, setStatus] = useState();
+  const [imageUrl, setImageUrl] = useState();
   const style = {
     position: "absolute",
     top: "50%",
@@ -116,12 +114,19 @@ export default function DataTable(id) {
     },
     { field: "dueDate", flex: 1, headerName: "Date", width: 90 },
     {
-      field: "image",
+      field: "images",
       flex: 1,
-      headerName: "image",
+      headerName: "images",
       width: 50,
       renderCell: (row) => {
-        return <Avatar src={imageUrl?.images} />;
+        return (
+          <Avatar
+            src={row?.row?.images}
+            onChange={() => {
+              handleFileChange();
+            }}
+          />
+        );
       },
     },
     {
@@ -163,7 +168,7 @@ export default function DataTable(id) {
     },
   ];
 
-  const [openn, setOpenn] = React.useState(false);
+  const [openn, setOpenn] = useState(false);
 
   const handleClickOpenn = () => {
     setOpenn(true);
@@ -177,10 +182,6 @@ export default function DataTable(id) {
   useEffect(() => {
     fetchTodos();
   }, [sort, searchQuery, page, pageSize, priority, status]);
-
-  // const handleSearch = () => {
-  //   fetchTodos();
-  // };
 
   const fetchTodos = async () => {
     try {
@@ -240,6 +241,8 @@ export default function DataTable(id) {
     }
   };
 
+  console.log("tod", todos);
+
   const handleDelete = () => {
     console.log("id", id);
     fetch(`http://localhost:3000/api/delete/${deleteid}`, {
@@ -269,42 +272,49 @@ export default function DataTable(id) {
   };
 
   const handleInputChange = (event) => {
-    const { name, value } = event?.target;
-    setDataToUpdate({
-      ...dataToUpdate,
+    const { name, value } = event.target;
+    console.log("namw:", name, "value", value);
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
   };
+  const handleFileChange = (event) => {
+    setImageUrl(event.target.files[0]);
+  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append("title", myData?.title);
+    formData.append("description", myData?.description);
+    formData.append("status", myData?.status);
+    formData.append("priority", myData?.priority);
+    formData.append("dueDate", new Date(myData?.dueDate).getTime());
+    formData.append("images", imageUrl);
 
-  const handleUpdate = () => {
-    axios
-      .put(
+    console.log("formData", formData, token);
+
+    try {
+      const response = await fetch(
         `http://localhost:3000/api/todoUpdate/${todoId}`,
-
-        dataToUpdate,
         {
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
+          body: formData,
         }
-      )
-      .then((response) => {
-        console.log("Data updated:", response?.data);
-      })
-      .catch((error) => {
-        console.error("Error updating data:", error);
-      });
-  };
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      setImageUrl(reader.result);
-    };
-
-    reader.readAsDataURL(file);
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Todo added successfully:", data);
+        setFormData(data);
+      } else {
+        console.error("Error adding todo:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error adding todo:", error);
+    }
   };
   return (
     <div
@@ -315,7 +325,7 @@ export default function DataTable(id) {
       }}
     >
       <Search>
-        <SearchIconWrapper>{/* <SearchIcon /> */}</SearchIconWrapper>
+        <SearchIconWrapper></SearchIconWrapper>
         <TextField
           key="search"
           id="search"
@@ -350,17 +360,17 @@ export default function DataTable(id) {
           <InputLabel id="demo-simple-select-label">Status</InputLabel>
           <Select
             labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            label="Status"
+            id="status"
+            label="status"
             name="status"
             value={status}
             onChange={(e) => {
               setStatus(e?.target?.value);
             }}
           >
-            <MenuItem value={"pending"}>Pending</MenuItem>
-            <MenuItem value={"in-progress"}>In-Progress</MenuItem>
-            <MenuItem value={"completed"}>Completed</MenuItem>
+            <MenuItem value={"pending"}>pending</MenuItem>
+            <MenuItem value={"in-Progress"}>in-Progress</MenuItem>
+            <MenuItem value={"completed"}>completed</MenuItem>
           </Select>
         </FormControl>
 
@@ -368,8 +378,8 @@ export default function DataTable(id) {
           <InputLabel id="demo-simple-select-label">Priority</InputLabel>
           <Select
             labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            label="Priority"
+            id="priority"
+            label="priority"
             name="priority"
             value={priority}
             onChange={(e) => {
@@ -440,7 +450,6 @@ export default function DataTable(id) {
         hideFooterSelectedRowCount={true}
         rowCount={resultCount ?? 0}
       />
-
       <Container maxWidth="sm">
         <Stack spacing={2} direction="row">
           <Modal
@@ -451,35 +460,23 @@ export default function DataTable(id) {
           >
             <Box sx={style}>
               <Container maxWidth="sm">
-                {imageUrl && (
-                  <Stack direction="row" spacing={4}>
-                    <Avatar alt="Cindy Baker" src={imageUrl} />
-                  </Stack>
-                )}
-                <form
-                  onClick={() => {
-                    handleUpdate();
-                  }}
-                >
+                <form onSubmit={handleSubmit}>
                   <Typography variant="h5" gutterBottom>
                     Update Todo
                   </Typography>
-                  <label htmlFor="upload-image">
-                    <Button variant="contained" component="span">
-                      Upload
-                    </Button>
-                    <input
-                      id="upload-image"
-                      hidden
-                      accept="image/*"
-                      type="file"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
+                  <TextField
+                    type="file"
+                    label="Upload File"
+                    variant="outlined"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleFileChange}
+                  />
                   <TextField
                     label="Title"
                     name="title"
-                    value={dataToUpdate?.title}
+                    value={myData.title}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -488,10 +485,10 @@ export default function DataTable(id) {
                   <TextField
                     label="Description"
                     name="description"
-                    value={dataToUpdate?.description}
-                    onChange={handleInputChange}
                     fullWidth
                     margin="normal"
+                    value={myData.description}
+                    onChange={handleInputChange}
                     required
                     multiline
                     rows={4}
@@ -500,11 +497,11 @@ export default function DataTable(id) {
                     label="Due Date"
                     type="date"
                     name="dueDate"
-                    value={dataToUpdate?.dueDate}
-                    onChange={handleInputChange}
                     fullWidth
                     margin="normal"
                     required
+                    value={myData.dueDate}
+                    onChange={handleInputChange}
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -519,7 +516,7 @@ export default function DataTable(id) {
                         id="demo-simple-select"
                         label="Priority"
                         name="priority"
-                        value={dataToUpdate?.priority}
+                        value={myData?.priority}
                         onChange={handleInputChange}
                       >
                         <MenuItem value={"low"}>Low</MenuItem>
@@ -536,11 +533,11 @@ export default function DataTable(id) {
                         id="demo-simple-select"
                         label="Status"
                         name="status"
-                        value={dataToUpdate?.status}
+                        value={myData?.status}
                         onChange={handleInputChange}
                       >
                         <MenuItem value={"pending"}>Pending</MenuItem>
-                        <MenuItem value={"in-progress"}>In-Progress</MenuItem>
+                        <MenuItem value={"in-Progress"}>In-Progress</MenuItem>
                         <MenuItem value={"completed"}>Completed</MenuItem>
                       </Select>
                     </FormControl>

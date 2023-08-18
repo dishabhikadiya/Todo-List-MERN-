@@ -10,14 +10,17 @@ const fs = require("fs");
 // CREATE TODO
 exports.createTodo = catchAsyncErrors(async (req, res) => {
   try {
+    console.log("req.body", req.body);
+    console.log("file", req.file.filename);
     const { title, description, dueDate, status } = req.body;
-    let images = `${imagepath}/${req.file.filename}`;
+
+    let imagePath = `${imagepath}/${req.file.filename}`;
     const newTodo = new todoModel({
       title,
       description,
       dueDate,
       status,
-      images,
+      images: imagePath,
       user: req.user.id,
     });
     console.log(newTodo);
@@ -116,34 +119,44 @@ exports.remove = catchAsyncErrors(async (req, res) => {
 
 // UPDATE TODO
 exports.update = catchAsyncErrors(async (req, res) => {
+  console.log("req.body", req.body);
+  console.log(
+    "file 123-----------------------------------------------------------------------------",
+    req.file.filename
+  );
+  // return;
   try {
     const { id } = req.params;
-    const { title, description, dueDate, status } = req.body;
+    const { title, description, dueDate, status, priority } = req.body;
+    console.log("status", status);
+    console.log("priority", priority);
+    if (req.file) {
+      let images = `${imagepath}/${req.file.filename}`;
+      const updateTodos = await todoModel.findByIdAndUpdate(
+        id,
+        Object.assign({ images }, req.body)
+      );
+      fs.unlinkSync(updateTodos.images);
+      // res.status(200).json(updateTodos);
+    }
     const updateTodos = await todoModel.findByIdAndUpdate(
       id,
       {
         title,
         description,
-        dueDate,
+        // dueDate,
         status,
+        priority,
       },
       { new: true }
     );
-
-    // if (req.file) {
-    //   let images = `${imagepath}/${req.file.filename}`;
-    //   const updated = await Todo.findByIdAndUpdate(
-    //     id,
-    //     Object.assign({ images }, req.body)
-    //   );
-    //   fs.unlinkSync(updated.images);
-    //   res.status(200).json({ success: true, data: updated });
-    // }
     res.status(200).json(updateTodos);
     if (!updateTodos) {
+      console.log("errrror", error);
       return res.status(404).json({ error: "Todo not found" });
     }
   } catch (error) {
+    console.log("errrror", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
