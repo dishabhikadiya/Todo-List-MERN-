@@ -5,9 +5,11 @@ const app = express();
 const user = require("./Routes/userRoute");
 const todo = require("./Routes/todoRoute");
 const path = require("path");
-
+const cookieParser = require("cookie-parser");
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(cookieParser());
+
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use("/uplodes", express.static("uplodes"));
 app.use("/api", user);
