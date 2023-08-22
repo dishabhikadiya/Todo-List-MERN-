@@ -6,11 +6,17 @@ import Link from "@mui/material/Link";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [otp, setOTP] = useState("");
 
+  console.log("otp", otp);
+  const [message, setMessage] = useState("");
+  console.log("setOTP", message);
   const handleEmailChange = (e) => {
+    console.log("ee", e);
     setEmail(e.target.value);
   };
 
@@ -19,12 +25,19 @@ const ForgotPassword = () => {
       const response = await axios.post("http://localhost:3000/api/forgot", {
         email,
       });
-      navigate("/otp");
-      console.log(response.data); // Handle the response
+
+      console.log("ress", response.data.data);
+      if (response?.data?.data) {
+        document.cookie = `otp=${response?.data?.data}`;
+        // navigate("/otp");
+        setMessage("please cheak Email");
+        console.log("OTP has been set as a cookie.", response?.data?.data);
+      }
     } catch (error) {
       console.error("Error:", error);
     }
   };
+
   const style = {
     position: "absolute",
     top: "50%",
@@ -38,6 +51,8 @@ const ForgotPassword = () => {
   };
   return (
     <Box sx={style}>
+      {message}
+
       <TextField
         margin="normal"
         required

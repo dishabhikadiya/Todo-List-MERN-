@@ -111,7 +111,8 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   try {
     let email = req.body.email;
     console.log("sent this mail :", email);
-    let otp = Math.floor(Math.random() * 9000);
+    let otp = `http://localhost:3001/resetPassword`;
+    console.log(otp);
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -134,9 +135,15 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
       if (error) {
         console.log("OTP is not vaild :", error);
       } else {
-        res.cookie("obj", otp);
+        res.cookie("otp", otp, {
+          httpOnly: true, // Make the cookie HttpOnly
+          secure: true, // Transmit the cookie only over HTTPS
+        });
+
         console.log("Email sent successfully");
-        return res.status(200).json({ message: "Email sent successfully" });
+        return res
+          .status(200)
+          .json({ message: "Email sent successfully", data: otp });
       }
     });
   } catch (error) {
@@ -151,12 +158,14 @@ exports.verifyOTP = catchAsyncErrors(async (req, res, next) => {
     const {
       body: { otp },
     } = req;
-    console.log(req.body);
-    console.log(req.cookies.obj);
-    if (otp == req.cookies.obj) {
+
+    console.log("req", req.body.otp);
+    if (req.cookies.otp != otp) {
       return res
-        .status(200)
-        .json({ success: true, message: "pleace change your password !!" });
+        .status(404)
+        .json({ success: false, message: "pleace your otp  !!" });
+    } else {
+      return res.status(200).json({ success: true });
     }
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
