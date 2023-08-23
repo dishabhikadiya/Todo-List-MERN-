@@ -2,11 +2,11 @@ import React from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 const ResetPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -29,6 +29,7 @@ const ResetPassword = () => {
       }); // Replace with your actual API endpoint
 
       if (response.data.success) {
+        navigate("/");
         setMessage(response.data.message);
       }
     } catch (error) {
